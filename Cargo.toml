@@ -18,3 +18,7 @@ tokio-stream = "0.1"
 # Already built through axum; named here for preview tunnels (HTTP upgrades).
 hyper = { version = "1", default-features = false }
 hyper-util = { version = "0.1", default-features = false, features = ["tokio"] }
+croner = "4.0.1"
+chrono = { version = "0.4.45", features = ["serde"] }
+chrono-tz = "0.10.4"
+uuid = { version = "1.28.0", features = ["v4"] }

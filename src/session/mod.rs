@@ -10,6 +10,7 @@ mod guard;
 pub(crate) mod history;
 mod prompt;
 pub mod report;
+pub mod scheduler;
 mod sleep;
 mod state;
 pub mod thread;
@@ -276,6 +277,7 @@ pub struct Manager {
     pub(crate) config: Config,
     local: Arc<Mutex<Local>>,
     history: history::History,
+    scheduler: Mutex<scheduler::Store>,
     pub(crate) observability: Observability,
     pub(crate) storage: Guard,
     pub(crate) workspaces: crate::workspace::Workspaces,
@@ -399,6 +401,7 @@ impl Manager {
         let sync = crate::sync::Sync::open(&config)?;
         let previews = crate::preview::Previews::open(&config)?;
         let history = history::History::new(&config)?;
+        let scheduler = Mutex::new(scheduler::Store::open(&config.state_dir)?);
         let local = Arc::new(Mutex::new(local));
         let registry = local.clone();
         let observability = Observability::start(&config, history.api.clone(), move || {
@@ -408,6 +411,7 @@ impl Manager {
             config,
             local,
             history,
+            scheduler,
             observability,
             storage,
             workspaces,

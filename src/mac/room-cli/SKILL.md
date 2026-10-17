@@ -17,3 +17,5 @@ description: 'Inspect and control the user’s Cloudroom threads, projects, and 
 - On the Mac, start with `room-cli --help` or `room-cli guide`. Prefer `--json`.
 - `Mac unavailable` means the Mac is offline or Mac access is off. Tell the user.
 - Never inspect, message, or launch other threads unless the user asks.
+
+Self-hosted Core with local history schedules prompts internally. Loops use the current thread and workspace, default to UTC, and support five-field cron or one-time schedules. `--new-thread` and preflight scripts are unsupported. Keep Core running; no Mac connection is needed. Unknown outcomes pause the loop for review rather than replaying the task.
