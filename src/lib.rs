@@ -56,6 +56,7 @@ pub const FEATURES: &[&str] = &[
     "drain",
     "terminals",
     "files_wait",
+    "automations",
 ];
 
 pub async fn serve(mut config: config::Config) -> Result<(), Box<dyn std::error::Error>> {
@@ -80,6 +81,7 @@ pub async fn serve(mut config: config::Config) -> Result<(), Box<dyn std::error:
     manager.start_idle_sleeper();
     manager.start_uploader();
     manager.start_auth_monitor();
+    manager.start_scheduler();
     eprintln!("Cloudroom listening on {}", listener.local_addr()?);
     let shutdown = manager.clone();
     let mut changed = manager.subscribe();

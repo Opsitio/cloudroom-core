@@ -48,6 +48,42 @@ Commands, all `POST /v1/sessions/{id}/...` with a `request_id`:
 
 `POST /v1/sessions/{id}/secrets/{request}` answers an agent's secret request with the requested values. It takes no `request_id`.
 
+## Self-hosted loops
+
+Capability `automations` adds `POST /v1/automations`. Successful requests return
+202 with `{scheduler:"core", automation}` for create/update/pause/resume/run,
+`{scheduler:"core", automations:[...]}` for list, or `{ok:true}` for delete/archive.
+The normal Core bearer token is required. Agent `room-cli loop` commands use the
+same scheduler when `CLOUDROOM_LOCAL_HISTORY=1` and no API URL is configured;
+agents can only see and change loops belonging to their own session.
+
+Create with `{action:"create", session:"cr_...", thread:"thr_...", name:"Check",
+prompt:"Review pending work", cron:"*/15 * * * *", timezone:"Europe/Zurich"}`.
+`thread` is an optional GUI reference. Use `run_at` with an RFC3339 timestamp for
+a one-time run instead of `cron`. `at` and `delay` (for example `"30 minutes"`)
+are also accepted for the agent CLI. Timezone defaults to UTC. `enabled:false`
+creates a paused loop. `new_thread:false` is the default; fresh-thread runs and
+preflight scripts are explicitly unsupported in this version.
+
+Actions `update`, `pause`, `resume`, `run`, and `delete` take `id`. Update accepts
+name, prompt, schedule, timezone and enabled. Setting a cron clears the one-time
+schedule and vice versa. List optionally filters by `thread` or `session`.
+`archived` takes `session` and pauses that session's loops. A completed one-time
+loop needs a future schedule before resuming; manual `run` also works while paused.
+
+Core checks every five seconds, waits while the target is busy or paused, and
+coalesces missed recurring times into one run. A run's request ID and prompt are
+saved before dispatch in `CLOUDROOM_STATE_DIR/automations.json` (mode 0600).
+Receipts reconcile retries and restarts. Unknown outcomes pause the loop for
+human review; three consecutive failed runs also pause it. Deletion or pausing
+does not interrupt an already accepted prompt. A storage write failure stops
+the scheduler until storage is repaired and Core restarted. At most 256 loops
+are stored. Keep the state directory on persistent storage.
+
+Rows include `last_request_id`, `last_run_state`, `last_error`, `runs` and the next
+scheduled time. Read the session's request receipt and events for full output.
+The Core service must remain running; no GUI connection or SSH session is needed.
+
 ## History and live events
 
 - `GET /v1/sessions/{id}/events?after=N`: up to 256 records after sequence `N`. Page with the last returned `sequence`.
